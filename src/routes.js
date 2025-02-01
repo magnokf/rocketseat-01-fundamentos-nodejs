@@ -1,90 +1,109 @@
 import { randomUUID } from 'node:crypto'
 import { Database } from './database.js'
 import { buildRoutePath } from './utils/build-route-path.js'
+import * as sea from 'node:sea'
 
 const database = new Database()
 
 export const routes = [
 	
-	// all users
+	// all tasks
 	{
 		method: 'GET',
-		path: buildRoutePath('/users'),
+		path: buildRoutePath('/tasks'),
 		handler: async (req, res) => {
-			const users = database.select('users')
-			return res.end(JSON.stringify(users))
+			const { search } = req.query
+			const tasks = database.select('tasks',
+				search ? {
+					title: search,
+					description: search,
+					complete_at: search
+				} : null)
+			return res.end(JSON.stringify(tasks))
 		}
 	},
-	// create user
+	// create task
 	{
 		method: 'POST',
-		path: buildRoutePath('/users'),
+		path: buildRoutePath('/tasks'),
 		handler: async (req, res) => {
-			const { name, email } = req.body
+			const { title, description } = req.body
 			
-			const user = database.insert('users', {
+			const task = database.insert('tasks', {
 				id: randomUUID(),
-				name,
-				email
+				title,
+				description,
+				completed_at: null,
+				created_at: new Date(),
+				updated_at: new Date()
 			})
 			
 			return res
 				.writeHead(201)
-				.end(JSON.stringify(user))
+				.end(JSON.stringify(task))
 		}
 	},
-	// get user by id
+	// get task by id
 	{
 		method: 'GET',
-		path: buildRoutePath('/users/:id'),
+		path: buildRoutePath('/tasks/:id'),
 		handler: async (req, res) => {
 			const { id } = req.params
-			const user = database.select('users').find(user => user.id === id)
+			const task = database.select('tasks').find(task => task.id === id)
 			
-			if (!user) {
+			if (!task) {
 				return res
 					.writeHead(404)
-					.end(JSON.stringify({ error: 'User not found' }))
+					.end(JSON.stringify({ error: 'Task not found' }))
 			}
 			
-			return res.end(JSON.stringify(user))
+			return res.end(JSON.stringify(task))
 		}
 	},
-	// update user by id
+	// update task by id
 	{
 		method: 'PUT',
-		path: buildRoutePath('/users/:id'),
+		path: buildRoutePath('/tasks/:id'),
 		handler: async (req, res) => {
 			const { id } = req.params
-			const { name, email } = req.body
+			const { title, description, completed_at, created_at} = req.body
 			
-			database.update('users', id, { name, email })
+			let updated_at = new Date()
+			
+			database.update('tasks', id, {
+				title,
+				description,
+				completed_at,
+				created_at,
+				updated_at
+				
+			})
 			
 			return res.writeHead(204).end()
 		}
 	},
-	// delete user by id
+	// delete task by id
 	{
 		method: 'DELETE',
-		path: buildRoutePath('/users/:id'),
+		path: buildRoutePath('/tasks/:id'),
 		handler: async (req, res) => {
 			const { id } = req.params
 			
-			const users = database.select('users')
-			const userIndex = users.findIndex(user => user.id === id)
-
+			const tasks = database.select('tasks')
+			const userIndex = tasks.findIndex(user => user.id === id)
+			
 			if (userIndex === -1) {
 				return res
 					.writeHead(404)
 					.end(JSON.stringify({ error: 'User not found' }))
 			}
-
-			users.splice(userIndex, 1)
-
-			database.delete('users', id)
+			
+			tasks.splice(userIndex, 1)
+			
+			database.delete('tasks', id)
 			
 			return res.writeHead(204).end()
 			
 		}
-	},
+	}
 ]

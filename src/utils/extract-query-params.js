@@ -1,13 +1,14 @@
-export function extractQueryParams (query) {
+export function extractQueryParams(query) {
+	if (!query) {
+		return {}
+	}
 	
-	const queryParams = query.split('&')
-	
-	const queryObject = {}
-	
-	queryParams.forEach(param => {
-		const [key, value] = param.split('=')
-		queryObject[key] = value
-	})
-	
-	return queryObject
+	return query
+		.slice(1)
+		.split('&')
+		.reduce((queryParams, param) => {
+			const [key, value] = param.split('=')
+			queryParams[key] = value
+			return queryParams
+		}, {})
 }
