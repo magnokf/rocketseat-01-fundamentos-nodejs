@@ -66,9 +66,15 @@ export const routes = [
 		path: buildRoutePath('/tasks/:id'),
 		handler: async (req, res) => {
 			const { id } = req.params
-			const { title, description, completed_at, created_at} = req.body
+			const { title, description, is_completed, created_at} = req.body
 			
 			let updated_at = new Date()
+			let completed_at = null
+			
+			if (is_completed) {
+				completed_at = new Date()
+				updated_at = new Date()
+			}
 			
 			database.update('tasks', id, {
 				title,
