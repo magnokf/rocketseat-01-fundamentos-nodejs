@@ -5,6 +5,8 @@ import { buildRoutePath } from './utils/build-route-path.js'
 const database = new Database()
 
 export const routes = [
+	
+	// all users
 	{
 		method: 'GET',
 		path: buildRoutePath('/users'),
@@ -13,6 +15,7 @@ export const routes = [
 			return res.end(JSON.stringify(users))
 		}
 	},
+	// create user
 	{
 		method: 'POST',
 		path: buildRoutePath('/users'),
@@ -30,6 +33,7 @@ export const routes = [
 				.end(JSON.stringify(user))
 		}
 	},
+	// get user by id
 	{
 		method: 'GET',
 		path: buildRoutePath('/users/:id'),
@@ -46,6 +50,7 @@ export const routes = [
 			return res.end(JSON.stringify(user))
 		}
 	},
+	// update user by id
 	{
 		method: 'PUT',
 		path: buildRoutePath('/users/:id'),
@@ -58,6 +63,7 @@ export const routes = [
 			return res.writeHead(204).end()
 		}
 	},
+	// delete user by id
 	{
 		method: 'DELETE',
 		path: buildRoutePath('/users/:id'),
@@ -81,22 +87,4 @@ export const routes = [
 			
 		}
 	},
-	{
-		method: 'GET',
-		url: '/users/:id/friends',
-		handler: async (req, res) => {
-			const { id } = req.params
-			const user = database.select('users').find(user => user.id === id)
-			
-			if (!user) {
-				return res
-					.writeHead(404)
-					.end(JSON.stringify({ error: 'User not found' }))
-			}
-			
-			const friends = database.select('users').filter(user => user.id !== id)
-			
-			return res.end(JSON.stringify(friends))
-		}
-	}
 ]
